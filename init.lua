@@ -4,8 +4,9 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -16,10 +17,12 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
+
+vim.opt.foldmethod = 'syntax'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
@@ -49,7 +52,7 @@ vim.opt.signcolumn = 'yes'
 vim.opt.updatetime = 250
 
 -- Decrease mapped sequence wait time
-vim.opt.timeoutlen = 300
+vim.opt.timeoutlen = 500
 
 -- Configure how new splits should be opened
 vim.opt.splitright = true
@@ -81,6 +84,19 @@ vim.opt.confirm = true
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+-- Neotree toggle
+vim.keymap.set('n', '<leader>fe', '<cmd>Neotree toggle<CR>')
+
+-- Change tabs
+vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>')
+vim.keymap.set('n', '<S-h>', '<cmd>bprev<CR>')
+
+-- toggle line wrap
+vim.keymap.set('n', '<leader>ww', '<cmd>set wrap!<CR>')
+
+-- close buffer
+vim.keymap.set('n', '<leader>x', '<cmd>bdelete<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -188,6 +204,28 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+
+  -- Neotree:
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+      "MunifTanjim/nui.nvim",
+      -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
+    },
+    lazy = false, -- neo-tree will lazily load itself
+    ---@module "neo-tree"
+    ---@type neotree.Config?
+    opts = {
+      -- fill any relevant options here
+    },
+  },
+
+  {
+    'akinsho/bufferline.nvim', version = "*", dependencies = 'nvim-tree/nvim-web-devicons'
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -387,6 +425,11 @@ require('lazy').setup({
     },
   },
   {
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    opts = {},
+  },
+  {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -584,8 +627,9 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         clangd = {
-            cmd = { "clangd", "--background-index --query-driver=$HOME/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/**/bin/xtensa-esp-elf-*" },
-            root_dir = require'lspconfig'.util.root_pattern('build/compile_commands.json', '.git'),
+            capabilities = require'cmp_nvim_lsp'.default_capabilities(),
+            cmd = { "/home/gerhardus/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd", "--background-index", "--query-driver=**" },
+            root_dir = function()end,
         },
         -- gopls = {},
         pyright = {},
@@ -786,7 +830,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'tokyonight'
     end,
   },
 
@@ -904,5 +948,54 @@ require('lazy').setup({
   },
 })
 
+require("bufferline").setup{}
+vim.opt.termguicolors = true
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+require("typescript-tools").setup {
+  handlers = { ... },
+  settings = {
+    -- spawn additional tsserver instance to calculate diagnostics on it
+    separate_diagnostic_server = true,
+    -- "change"|"insert_leave" determine when the client asks the server about diagnostic
+    publish_diagnostic_on = "insert_leave",
+    -- array of strings("fix_all"|"add_missing_imports"|"remove_unused"|
+    -- "remove_unused_imports"|"organize_imports") -- or string "all"
+    -- to include all supported code actions
+    -- specify commands exposed as code_actions
+    expose_as_code_action = {},
+    -- string|nil - specify a custom path to `tsserver.js` file, if this is nil or file under path
+    -- not exists then standard path resolution strategy is applied
+    tsserver_path = nil,
+    -- specify a list of plugins to load by tsserver, e.g., for support `styled-components`
+    -- (see 💅 `styled-components` support section)
+    tsserver_plugins = {},
+    -- this value is passed to: https://nodejs.org/api/cli.html#--max-old-space-sizesize-in-megabytes
+    -- memory limit in megabytes or "auto"(basically no limit)
+    tsserver_max_memory = "auto",
+    -- described below
+    tsserver_format_options = {},
+    tsserver_file_preferences = {},
+    -- locale of all tsserver messages, supported locales you can find here:
+    -- https://github.com/microsoft/TypeScript/blob/3c221fc086be52b19801f6e8d82596d04607ede6/src/compiler/utilitiesPublic.ts#L620
+    tsserver_locale = "en",
+    -- mirror of VSCode's `typescript.suggest.completeFunctionCalls`
+    complete_function_calls = false,
+    include_completions_with_insert_text = true,
+    -- CodeLens
+    -- WARNING: Experimental feature also in VSCode, because it might hit performance of server.
+    -- possible values: ("off"|"all"|"implementations_only"|"references_only")
+    code_lens = "off",
+    -- by default code lenses are displayed on all referencable values and for some of you it can
+    -- be too much this option reduce count of them by removing member references from lenses
+    disable_member_code_lens = true,
+    -- JSXCloseTag
+    -- WARNING: it is disabled by default (maybe you configuration or distro already uses nvim-ts-autotag,
+    -- that maybe have a conflict if enable this feature. )
+    jsx_close_tag = {
+        enable = false,
+        filetypes = { "javascriptreact", "typescriptreact" },
+    }
+  },
+}
