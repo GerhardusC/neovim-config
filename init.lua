@@ -24,6 +24,8 @@ vim.opt.mouse = 'a'
 
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevelstart = 1
+vim.opt.foldnestmax = 4
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
