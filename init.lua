@@ -22,14 +22,13 @@ vim.opt.relativenumber = true
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
+-- vim.opt.foldmethod = 'syntax'
 vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldexpr = "v:lua.vim.lsp.foldexpr()"
 vim.opt.foldlevelstart = 99
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
-
-vim.opt.diffopt = "vertical"
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -38,10 +37,6 @@ vim.opt.diffopt = "vertical"
 vim.schedule(function()
   vim.opt.clipboard = 'unnamedplus'
 end)
-
-if vim.lsp.inlay_hint then
-  vim.lsp.inlay_hint.enable(true, { 0 })
-end
 
 -- Enable break indent
 vim.opt.breakindent = true
@@ -86,6 +81,8 @@ vim.opt.scrolloff = 10
 -- See `:help 'confirm'`
 vim.opt.confirm = true
 
+vim.opt.diffopt = 'vertical'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -109,6 +106,12 @@ vim.keymap.set('n', '<leader>x', '<cmd>bdelete<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+-- Next error
+vim.keymap.set('n', '<leader>en', '<cmd>lnext<CR>')
+--
+-- Prev error
+vim.keymap.set('n', '<leader>ep', '<cmd>lprev<CR>')
+
 -- load the session for the current directory
 vim.keymap.set("n", "<leader>ps", function() require("persistence").load() end)
 
@@ -120,13 +123,14 @@ vim.keymap.set("n", "<leader>pl", function() require("persistence").load({ last 
 
 -- stop Persistence => session won't be saved on exit
 vim.keymap.set("n", "<leader>pd", function() require("persistence").stop() end)
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
 --
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
--- vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
@@ -224,14 +228,11 @@ require('lazy').setup({
       },
     },
   },
-  --
-  -- Sessions
+
+  -- Eslint
   {
-    "folke/persistence.nvim",
-    event = "BufReadPre", -- this will only start session saving when an actual file was opened
-    opts = {
-      -- add any custom options here
-    },
+    'esmuellert/nvim-eslint',
+    opts = {}
   },
 
   -- Neotree:
@@ -254,6 +255,15 @@ require('lazy').setup({
 
   {
     'akinsho/bufferline.nvim', version = "*", dependencies = 'nvim-tree/nvim-web-devicons'
+  },
+
+  -- Sessions...
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre", -- this will only start session saving when an actual file was opened
+    opts = {
+      -- add any custom options here
+    }
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -337,6 +347,7 @@ require('lazy').setup({
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
+    branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -383,17 +394,32 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
+        defaults = {
+          vimgrep_arguments = {
+            "rg",
+            "--max-filesize=3M",
+            "--color=never",
+            "--no-heading",
+            "--with-filename",
+            "--line-number",
+            "--column",
+            "--smart-case"
+          },
+          preview = {
+            filesize_limit = 5, -- in MB
+          },
+        },
         -- defaults = {
         --   mappings = {
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
         -- pickers = {}
-        extensions = {
-          ['ui-select'] = {
-            require('telescope.themes').get_dropdown(),
-          },
-        },
+        -- extensions = {
+        --   ['ui-select'] = {
+        --     require('telescope.themes').get_dropdown(),
+        --   },
+        -- },
       }
 
       -- Enable Telescope extensions if they are installed
@@ -426,7 +452,7 @@ require('lazy').setup({
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
       vim.keymap.set('n', '<leader>s/', function()
         builtin.live_grep {
-          grep_open_files = true,
+          -- grep_open_files = true,
           prompt_title = 'Live Grep in Open Files',
         }
       end, { desc = '[S]earch [/] in Open Files' })
@@ -438,12 +464,6 @@ require('lazy').setup({
     end,
   },
 
-  -- rust_analyzer
-  -- {
-  --   'mrcjkb/rustaceanvim',
-  --   version = '^6', -- Recommended
-  --   lazy = false, -- This plugin is already lazy
-  -- },
   -- LSP Plugins
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -457,11 +477,11 @@ require('lazy').setup({
       },
     },
   },
-  {
-    "pmizio/typescript-tools.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
-    opts = {},
-  },
+  -- {
+  --   "pmizio/typescript-tools.nvim",
+  --   dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+  --   opts = {},
+  -- },
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -661,32 +681,19 @@ require('lazy').setup({
       local servers = {
         clangd = {
             capabilities = require'cmp_nvim_lsp'.default_capabilities(),
-            -- cmd = { "/home/gerhardus/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd", "--background-index", "--query-driver=**" },
-            -- root_dir = function()end,
+            cmd = { "/home/gerhardus/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd", "--background-index", "--query-driver=**" },
+            root_dir = function()end,
         },
         gopls = {},
-        pyright = {},
-        rust_analyzer = {
-          -- cmd_env = {
-          --   RUSTUP_TOOLCHAIN = "nightly"
-          -- }
-          -- settings = {
-          --   ["rust-analyzer"] = {
-          --     check = {
-          --       command = "cargo",
-          --       allFeatures = false,
-          --       allTargets = false,
-          --     },
-          --   }
-          -- }
-        },
+        -- pyright = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
         --
 
         lua_ls = {
@@ -725,7 +732,6 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        automatic_enable = true,
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
         handlers = {
@@ -905,17 +911,17 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
+      -- local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      -- statusline.setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      -- statusline.section_location = function()
+        -- return '%2l:%-2v'
+      -- end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
@@ -1000,49 +1006,79 @@ vim.opt.termguicolors = true
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
-require("typescript-tools").setup {
-  handlers = { ... },
-  settings = {
-    -- spawn additional tsserver instance to calculate diagnostics on it
-    separate_diagnostic_server = true,
-    -- "change"|"insert_leave" determine when the client asks the server about diagnostic
-    publish_diagnostic_on = "insert_leave",
-    -- array of strings("fix_all"|"add_missing_imports"|"remove_unused"|
-    -- "remove_unused_imports"|"organize_imports") -- or string "all"
-    -- to include all supported code actions
-    -- specify commands exposed as code_actions
-    expose_as_code_action = {},
-    -- string|nil - specify a custom path to `tsserver.js` file, if this is nil or file under path
-    -- not exists then standard path resolution strategy is applied
-    tsserver_path = nil,
-    -- specify a list of plugins to load by tsserver, e.g., for support `styled-components`
-    -- (see 💅 `styled-components` support section)
-    tsserver_plugins = {},
-    -- this value is passed to: https://nodejs.org/api/cli.html#--max-old-space-sizesize-in-megabytes
-    -- memory limit in megabytes or "auto"(basically no limit)
-    tsserver_max_memory = "auto",
-    -- described below
-    tsserver_format_options = {},
-    tsserver_file_preferences = {},
-    -- locale of all tsserver messages, supported locales you can find here:
-    -- https://github.com/microsoft/TypeScript/blob/3c221fc086be52b19801f6e8d82596d04607ede6/src/compiler/utilitiesPublic.ts#L620
-    tsserver_locale = "en",
-    -- mirror of VSCode's `typescript.suggest.completeFunctionCalls`
-    complete_function_calls = false,
-    include_completions_with_insert_text = true,
-    -- CodeLens
-    -- WARNING: Experimental feature also in VSCode, because it might hit performance of server.
-    -- possible values: ("off"|"all"|"implementations_only"|"references_only")
-    code_lens = "off",
-    -- by default code lenses are displayed on all referencable values and for some of you it can
-    -- be too much this option reduce count of them by removing member references from lenses
-    disable_member_code_lens = true,
-    -- JSXCloseTag
-    -- WARNING: it is disabled by default (maybe you configuration or distro already uses nvim-ts-autotag,
-    -- that maybe have a conflict if enable this feature. )
-    jsx_close_tag = {
-        enable = false,
-        filetypes = { "javascriptreact", "typescriptreact" },
-    }
-  },
-}
+-- require("typescript-tools").setup {
+--   handlers = { ... },
+--   settings = {
+--     -- spawn additional tsserver instance to calculate diagnostics on it
+--     separate_diagnostic_server = true,
+--     -- "change"|"insert_leave" determine when the client asks the server about diagnostic
+--     publish_diagnostic_on = "insert_leave",
+--     -- array of strings("fix_all"|"add_missing_imports"|"remove_unused"|
+--     -- "remove_unused_imports"|"organize_imports") -- or string "all"
+--     -- to include all supported code actions
+--     -- specify commands exposed as code_actions
+--     expose_as_code_action = {},
+--     -- string|nil - specify a custom path to `tsserver.js` file, if this is nil or file under path
+--     -- not exists then standard path resolution strategy is applied
+--     tsserver_path = nil,
+--     -- specify a list of plugins to load by tsserver, e.g., for support `styled-components`
+--     -- (see 💅 `styled-components` support section)
+--     tsserver_plugins = {},
+--     -- this value is passed to: https://nodejs.org/api/cli.html#--max-old-space-sizesize-in-megabytes
+--     -- memory limit in megabytes or "auto"(basically no limit)
+--     tsserver_max_memory = "auto",
+--     -- described below
+--     tsserver_format_options = {},
+--     tsserver_file_preferences = {},
+--     -- locale of all tsserver messages, supported locales you can find here:
+--     -- https://github.com/microsoft/TypeScript/blob/3c221fc086be52b19801f6e8d82596d04607ede6/src/compiler/utilitiesPublic.ts#L620
+--     tsserver_locale = "en",
+--     -- mirror of VSCode's `typescript.suggest.completeFunctionCalls`
+--     complete_function_calls = false,
+--     include_completions_with_insert_text = true,
+--     -- CodeLens
+--     -- WARNING: Experimental feature also in VSCode, because it might hit performance of server.
+--     -- possible values: ("off"|"all"|"implementations_only"|"references_only")
+--     code_lens = "off",
+--     -- by default code lenses are displayed on all referencable values and for some of you it can
+--     -- be too much this option reduce count of them by removing member references from lenses
+--     disable_member_code_lens = true,
+--     -- JSXCloseTag
+--     -- WARNING: it is disabled by default (maybe you configuration or distro already uses nvim-ts-autotag,
+--     -- that maybe have a conflict if enable this feature. )
+--     jsx_close_tag = {
+--         enable = false,
+--         filetypes = { "javascriptreact", "typescriptreact" },
+--     }
+--   },
+-- }
+
+vim.api.nvim_create_autocmd('FileType', {
+
+  pattern = 'graphql',
+
+  callback = function(ev)
+
+    vim.lsp.start({
+
+      name = 'apollo-language-server',
+
+
+      -- If you're using a profile, you can append `'--profile', 'default'`
+
+      -- to this list (substitute `default` for your profile name)
+
+      cmd = {'rover', 'lsp', '--supergraph-config', 'supergraph.yaml'},
+
+
+      -- Set the "root directory" to the parent directory of the file in the
+
+      -- current buffer (`ev.buf`) that contains a `supergraph.yaml` file.
+
+      root_dir = vim.fs.root(ev.buf, {'supergraph.yaml'}),
+
+    })
+
+  end,
+
+})
