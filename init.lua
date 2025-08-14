@@ -224,7 +224,7 @@ require('lazy').setup({
       },
     },
   },
-
+  --
   -- Sessions
   {
     "folke/persistence.nvim",
@@ -337,7 +337,6 @@ require('lazy').setup({
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -439,6 +438,12 @@ require('lazy').setup({
     end,
   },
 
+  -- rust_analyzer
+  -- {
+  --   'mrcjkb/rustaceanvim',
+  --   version = '^6', -- Recommended
+  --   lazy = false, -- This plugin is already lazy
+  -- },
   -- LSP Plugins
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -656,12 +661,25 @@ require('lazy').setup({
       local servers = {
         clangd = {
             capabilities = require'cmp_nvim_lsp'.default_capabilities(),
-            cmd = { "/home/gerhardus/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd", "--background-index", "--query-driver=**" },
-            root_dir = function()end,
+            -- cmd = { "/home/gerhardus/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd", "--background-index", "--query-driver=**" },
+            -- root_dir = function()end,
         },
         gopls = {},
         pyright = {},
-        rust_analyzer = {},
+        rust_analyzer = {
+          -- cmd_env = {
+          --   RUSTUP_TOOLCHAIN = "nightly"
+          -- }
+          -- settings = {
+          --   ["rust-analyzer"] = {
+          --     check = {
+          --       command = "cargo",
+          --       allFeatures = false,
+          --       allTargets = false,
+          --     },
+          --   }
+          -- }
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -707,6 +725,7 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
+        automatic_enable = true,
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
         handlers = {
