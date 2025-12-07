@@ -252,6 +252,19 @@ require('lazy').setup({
       -- fill any relevant options here
     },
   },
+  
+  {
+      'nvim-flutter/flutter-tools.nvim',
+      lazy = false,
+      opts = {
+        flutter_path = "/home/gerhardus/Programs/flutter/flutter/bin/flutter",
+      },
+      dependencies = {
+          'nvim-lua/plenary.nvim',
+          'stevearc/dressing.nvim', -- optional for vim.ui.select
+      },
+      config = true,
+  },
 
   {
     'akinsho/bufferline.nvim', version = "*", dependencies = 'nvim-tree/nvim-web-devicons'
