@@ -97,6 +97,10 @@ vim.keymap.set('n', '<leader>fe', '<cmd>Neotree toggle<CR>')
 vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>')
 vim.keymap.set('n', '<S-h>', '<cmd>bprev<CR>')
 
+vim.keymap.set('n', '<leader>ff', '<cmd>set fileformat=unix<CR>')
+
+vim.keymap.set('n', '<leader>pv', '<cmd>MarkdownPreviewToggle<CR>')
+
 -- toggle line wrap
 vim.keymap.set('n', '<leader>ww', '<cmd>set wrap!<CR>')
 
@@ -226,6 +230,26 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+    },
+  },
+
+  -- Markdown support
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    build = "cd app && yarn install",
+    init = function()
+      vim.g.mkdp_filetypes = { "markdown" }
+    end,
+    ft = { "markdown" },
+  },
+
+  {
+    "hedyhli/markdown-toc.nvim",
+    ft = "markdown",  -- Lazy load on markdown filetype
+    cmd = { "Mtoc" }, -- Or, lazy load on "Mtoc" command
+    opts = {
+      -- Your configuration here (optional)
     },
   },
 
@@ -685,8 +709,10 @@ require('lazy').setup({
             root_dir = function()end,
         },
         gopls = {},
-        -- pyright = {},
+        pyright = {},
         rust_analyzer = {},
+        intelephense = {},
+        -- phan = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
