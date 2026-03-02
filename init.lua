@@ -197,7 +197,92 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = {
+      "rcarriga/nvim-dap-ui",
+      "nvim-neotest/nvim-nio",
+      "theHamsta/nvim-dap-virtual-text",
+      "williamboman/mason.nvim",
+      "jay-babu/mason-nvim-dap.nvim",
+      "mfussenegger/nvim-dap-python",
+    },
+    config = function()
+      local dap = require("dap")
+      local dapui = require("dapui")
+      local dap_python = require("dap-python")
 
+      -- Setup Mason-DAP to handle the installation of 'debugpy'
+      require("mason-nvim-dap").setup({
+        ensure_installed = { "python" },
+        automatic_installation = true,
+      })
+
+
+      -- Setup CodeLLDB for Rust
+      dap.adapters.codelldb = {
+        type = 'server',
+        port = "${port}",
+        executable = {
+          -- This finds the codelldb binary installed by Mason
+          command = vim.fn.stdpath("data") .. "/mason/bin/codelldb",
+          args = {"--port", "${port}"},
+        }
+      }
+
+      -- Configure Rust to use the adapter
+      dap.configurations.rust = {
+        {
+          name = "Launch Binary",
+          type = "codelldb",
+          request = "launch",
+          program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+          end,
+          args = function()
+            local args_str = vim.fn.input("Args: ", vim.fn.getcwd())
+            return vim.split(args_str, ' ')
+          end,
+
+          env = {
+            DATABASE_URL = function()
+              return vim.fn.input('DATABASE_URL')
+            end,
+          } ,
+          cwd = '${workspaceFolder}',
+          stopOnEntry = false,
+          setupCommands = { -- This allows vectors and other data structures to show the values inside them.
+            {
+               text = '-enable-pretty-printing',
+               description =  'enable pretty printing',
+               ignoreFailures = false
+            },
+          },
+        },
+      }
+
+      -- Setup UI
+      dapui.setup()
+      require("nvim-dap-virtual-text").setup({})
+
+      -- UI Auto-open/close
+      dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+      dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+      dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+
+      -- 5. Keymaps
+      vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
+      vim.keymap.set("n", "<leader>dc", dap.continue, { desc = "Debug: Start/Continue" })
+      vim.keymap.set("n", "<leader>di", dap.step_into, { desc = "Debug: Step Into" })
+      vim.keymap.set("n", "<leader>do", dap.step_over, { desc = "Debug: Step Over" })
+      vim.keymap.set("n", "<leader>dt", dap.terminate, { desc = "Debug: Terminate" })
+
+      -- Python Specific Setup
+      -- Uses the debugpy installed by Mason
+      local path = vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/bin/python"
+      dap_python.setup(path)
+    end,
+  },
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -220,7 +305,7 @@ require('lazy').setup({
   -- options to `gitsigns.nvim`.
   --
   -- See `:help gitsigns` to understand what the configuration keys do
-  { -- Adds git related signs to the gutter, as well as utilities for managing changes
+  {
     'lewis6991/gitsigns.nvim',
     opts = {
       signs = {
@@ -230,6 +315,56 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      on_attach = function(bufnr)
+        local gitsigns = require 'gitsigns'
+
+        local function map(mode, l, r, opts)
+          opts = opts or {}
+          opts.buffer = bufnr
+          vim.keymap.set(mode, l, r, opts)
+        end
+
+        -- Navigation
+        map('n', ']c', function()
+          if vim.wo.diff then
+            vim.cmd.normal { ']c', bang = true }
+          else
+            gitsigns.nav_hunk 'next'
+          end
+        end, { desc = 'Jump to next git [c]hange' })
+
+        map('n', '[c', function()
+          if vim.wo.diff then
+            vim.cmd.normal { '[c', bang = true }
+          else
+            gitsigns.nav_hunk 'prev'
+          end
+        end, { desc = 'Jump to previous git [c]hange' })
+
+        -- Actions
+        -- visual mode
+        map('v', '<leader>hs', function()
+          gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end, { desc = 'git [s]tage hunk' })
+        map('v', '<leader>hr', function()
+          gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end, { desc = 'git [r]eset hunk' })
+        -- normal mode
+        map('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'git [s]tage hunk' })
+        map('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'git [r]eset hunk' })
+        map('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'git [S]tage buffer' })
+        map('n', '<leader>hu', gitsigns.stage_hunk, { desc = 'git [u]ndo stage hunk' })
+        map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'git [R]eset buffer' })
+        map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'git [p]review hunk' })
+        map('n', '<leader>hb', gitsigns.blame_line, { desc = 'git [b]lame line' })
+        map('n', '<leader>hd', gitsigns.diffthis, { desc = 'git [d]iff against index' })
+        map('n', '<leader>hD', function()
+          gitsigns.diffthis '@'
+        end, { desc = 'git [D]iff against last commit' })
+        -- Toggles
+        map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[T]oggle git show [b]lame line' })
+        map('n', '<leader>tD', gitsigns.preview_hunk_inline, { desc = '[T]oggle git show [D]eleted' })
+      end,
     },
   },
 
@@ -276,7 +411,6 @@ require('lazy').setup({
       -- fill any relevant options here
     },
   },
-  
   {
       'nvim-flutter/flutter-tools.nvim',
       lazy = false,
@@ -733,7 +867,6 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
-        --
 
         lua_ls = {
           -- cmd = { ... },
