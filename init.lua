@@ -97,7 +97,7 @@ vim.keymap.set('n', '<leader>fe', '<cmd>Neotree toggle<CR>')
 vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>')
 vim.keymap.set('n', '<S-h>', '<cmd>bprev<CR>')
 
-vim.keymap.set('n', '<leader>ff', '<cmd>set fileformat=unix<CR>')
+vim.keymap.set('n', '<leader>le', '<cmd>set fileformat=unix<CR>', { desc = "Set line endings to UNIX format" })
 
 vim.keymap.set('n', '<leader>pv', '<cmd>MarkdownPreviewToggle<CR>')
 
@@ -261,6 +261,24 @@ require('lazy').setup({
         },
       }
 
+      dap.configurations.cpp = {
+        {
+          name = "Launch Binary",
+          type = "codelldb",
+          request = "launch",
+          program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd(), 'file')
+          end,
+          args = function()
+            local args_str = vim.fn.input("Args: ", "")
+            return vim.split(args_str, ' ')
+          end,
+
+          cwd = '${workspaceFolder}',
+          stopOnEntry = false,
+        }
+      }
+
       -- Setup UI
       dapui.setup()
       require("nvim-dap-virtual-text").setup({})
@@ -410,18 +428,6 @@ require('lazy').setup({
     opts = {
       -- fill any relevant options here
     },
-  },
-  {
-      'nvim-flutter/flutter-tools.nvim',
-      lazy = false,
-      opts = {
-        flutter_path = "/home/gerhardus/Programs/flutter/flutter/bin/flutter",
-      },
-      dependencies = {
-          'nvim-lua/plenary.nvim',
-          'stevearc/dressing.nvim', -- optional for vim.ui.select
-      },
-      config = true,
   },
 
   {
@@ -866,7 +872,16 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {},
+        ts_ls = {
+            -- root_dir = require("lspconfig").util.root_pattern({ "package.json", "tsconfig.json" }),
+            -- single_file_support = false,
+            -- settings = {},
+        },
+        -- denols = {
+        --     root_dir = require("lspconfig").util.root_pattern({"deno.json", "deno.jsonc"}),
+        --     single_file_support = false,
+        --     settings = {},
+        -- },
 
         lua_ls = {
           -- cmd = { ... },
