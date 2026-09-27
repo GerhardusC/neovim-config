@@ -49,14 +49,14 @@ return { -- Fuzzy Finder (files, lsp, etc)
       --
       defaults = {
         vimgrep_arguments = {
-          "rg",
-          "--max-filesize=3M",
-          "--color=never",
-          "--no-heading",
-          "--with-filename",
-          "--line-number",
-          "--column",
-          "--smart-case"
+          'rg',
+          '--max-filesize=3M',
+          '--color=never',
+          '--no-heading',
+          '--with-filename',
+          '--line-number',
+          '--column',
+          '--smart-case',
         },
         preview = {
           filesize_limit = 5, -- in MB
@@ -116,5 +116,3 @@ return { -- Fuzzy Finder (files, lsp, etc)
     end, { desc = '[S]earch [N]eovim files' })
   end,
 }
-
-

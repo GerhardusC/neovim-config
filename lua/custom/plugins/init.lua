@@ -2,11 +2,13 @@
 return {
   {
     'esmuellert/nvim-eslint',
-    opts = {}
+    opts = {},
   },
   {
-    'akinsho/bufferline.nvim', version = "*", dependencies = 'nvim-tree/nvim-web-devicons',
-    opts = {}
+    'akinsho/bufferline.nvim',
+    version = '*',
+    dependencies = 'nvim-tree/nvim-web-devicons',
+    opts = {},
   },
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -25,8 +27,8 @@ return {
     'folke/todo-comments.nvim',
     event = 'VimEnter',
     dependencies = {
-      'nvim-lua/plenary.nvim'
+      'nvim-lua/plenary.nvim',
     },
-    opts = { signs = false }
-  }
+    opts = { signs = false },
+  },
 }

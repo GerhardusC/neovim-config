@@ -9,8 +9,8 @@ vim.opt.relativenumber = true
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 -- vim.opt.foldmethod = 'syntax'
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "v:lua.vim.lsp.foldexpr()"
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr = 'v:lua.vim.lsp.foldexpr()'
 vim.opt.foldlevelstart = 99
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
@@ -54,4 +54,3 @@ vim.opt.scrolloff = 10
 -- See `:help 'confirm'`
 vim.opt.confirm = true
 vim.opt.diffopt = 'vertical'
-

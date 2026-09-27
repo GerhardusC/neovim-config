@@ -100,43 +100,42 @@ return {
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
-
     -- Setup CodeLLDB for Rust
     dap.adapters.codelldb = {
       type = 'server',
-      port = "${port}",
+      port = '${port}',
       executable = {
         -- This finds the codelldb binary installed by Mason
-        command = vim.fn.stdpath("data") .. "/mason/bin/codelldb",
-        args = {"--port", "${port}"},
-      }
+        command = vim.fn.stdpath 'data' .. '/mason/bin/codelldb',
+        args = { '--port', '${port}' },
+      },
     }
 
     dap.configurations.rust = {
       {
-        name = "Launch Binary",
-        type = "codelldb",
-        request = "launch",
+        name = 'Launch Binary',
+        type = 'codelldb',
+        request = 'launch',
         program = function()
           return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
         end,
         args = function()
-          local args_str = vim.fn.input("Args: ", "")
+          local args_str = vim.fn.input('Args: ', '')
           return vim.split(args_str, ' ')
         end,
 
         env = {
           DATABASE_URL = function()
-            return vim.fn.input('DATABASE_URL')
+            return vim.fn.input 'DATABASE_URL'
           end,
-        } ,
+        },
         cwd = '${workspaceFolder}',
         stopOnEntry = false,
         setupCommands = { -- This allows vectors and other data structures to show the values inside them.
           {
-             text = '-enable-pretty-printing',
-             description =  'enable pretty printing',
-             ignoreFailures = false
+            text = '-enable-pretty-printing',
+            description = 'enable pretty printing',
+            ignoreFailures = false,
           },
         },
       },
@@ -144,20 +143,20 @@ return {
 
     dap.configurations.cpp = {
       {
-        name = "Launch Binary",
-        type = "codelldb",
-        request = "launch",
+        name = 'Launch Binary',
+        type = 'codelldb',
+        request = 'launch',
         program = function()
           return vim.fn.input('Path to executable: ', vim.fn.getcwd(), 'file')
         end,
         args = function()
-          local args_str = vim.fn.input("Args: ", "")
+          local args_str = vim.fn.input('Args: ', '')
           return vim.split(args_str, ' ')
         end,
 
         cwd = '${workspaceFolder}',
         stopOnEntry = false,
-      }
+      },
     }
   end,
 }

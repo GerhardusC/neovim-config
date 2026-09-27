@@ -19,4 +19,3 @@ return { -- You can easily change to a different colorscheme.
     vim.cmd.colorscheme 'tokyonight'
   end,
 }
-

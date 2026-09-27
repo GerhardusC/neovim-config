@@ -7,7 +7,7 @@ vim.keymap.set('n', '<leader>doc', '<cmd>Neogen<CR>')
 -- Change tabs
 vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>')
 vim.keymap.set('n', '<S-h>', '<cmd>bprev<CR>')
-vim.keymap.set('n', '<leader>le', '<cmd>set fileformat=unix<CR>', { desc = "Set line endings to UNIX format" })
+vim.keymap.set('n', '<leader>le', '<cmd>set fileformat=unix<CR>', { desc = 'Set line endings to UNIX format' })
 vim.keymap.set('n', '<leader>pv', '<cmd>MarkdownPreviewToggle<CR>')
 -- toggle line wrap
 vim.keymap.set('n', '<leader>ww', '<cmd>set wrap!<CR>')
