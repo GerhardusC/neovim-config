@@ -19,6 +19,8 @@ return {
   opts = {
     filesystem = {
       window = {
+        -- Set if needed.
+        -- width = 20,
         mappings = {
           ['<leader>fe'] = 'close_window'
         },
@@ -26,3 +28,4 @@ return {
     },
   },
 }
+
