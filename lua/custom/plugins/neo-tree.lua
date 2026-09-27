@@ -3,7 +3,8 @@
 
 return {
   'nvim-neo-tree/neo-tree.nvim',
-  version = '*',
+  -- version = '*',
+  branch = "v3.x",
   dependencies = {
     'nvim-lua/plenary.nvim',
     'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
@@ -11,13 +12,15 @@ return {
   },
   cmd = 'Neotree',
   keys = {
-    { '\\', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
+    { '<leader>fe', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
   },
+  -- If this is disabled, neotree won't be loaded on startup, so you will see default file tree
+  lazy = false,
   opts = {
     filesystem = {
       window = {
         mappings = {
-          ['\\'] = 'close_window',
+          ['<leader>fe'] = 'close_window'
         },
       },
     },
