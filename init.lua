@@ -5,6 +5,8 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
+vim.cmd.colorscheme('unokai');
+
 require 'custom.options'
 require 'custom.keymaps'
 require 'custom.autocommands'
@@ -43,8 +45,9 @@ require('lazy').setup({
   require 'custom.plugins.theme',
   require 'custom.plugins.treesitter',
   require 'custom.plugins.debug',
-  require 'custom.plugins.neo-tree',
   require 'custom.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'custom.plugins.neo-tree',
+  require 'custom.plugins.snacks',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -78,7 +81,14 @@ require('lazy').setup({
   },
 })
 
-vim.opt.termguicolors = true
+vim.opt.termguicolors = true;
+
+vim.schedule(function()
+  local launchname = vim.fn.argv(0);
+  if launchname == "" or launchname == vim.trim(vim.fn.system("pwd")) then
+    require("custom.utils").open_changed_files();
+  end
+end);
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

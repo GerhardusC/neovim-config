@@ -15,7 +15,7 @@ return {
     { '<leader>fe', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
   },
   -- If this is disabled, neotree won't be loaded on startup, so you will see default file tree
-  lazy = false,
+  lazy = true,
   opts = {
     filesystem = {
       window = {

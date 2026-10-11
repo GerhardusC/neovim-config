@@ -19,3 +19,6 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('n', '<leader>en', '<cmd>lnext<CR>')
 -- Prev error
 vim.keymap.set('n', '<leader>ep', '<cmd>lprev<CR>')
+
+vim.keymap.set('n', '<leader>ps', require("custom.utils").open_changed_files)
+
