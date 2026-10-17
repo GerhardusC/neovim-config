@@ -48,6 +48,7 @@ require('lazy').setup({
   require 'custom.plugins.gitsigns', -- adds gitsigns recommend keymaps
   require 'custom.plugins.neo-tree',
   require 'custom.plugins.snacks',
+  require 'custom.plugins.kitty-scrollback',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -86,9 +87,7 @@ vim.opt.termguicolors = true;
 vim.schedule(function()
   local launchname = vim.fn.argv(0);
   if launchname == "" or launchname == vim.trim(vim.fn.system("pwd")) then
-    require("custom.utils").open_changed_files();
+    print "Welcome back"
   end
 end);
 
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et

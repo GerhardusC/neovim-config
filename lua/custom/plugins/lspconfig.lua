@@ -200,6 +200,7 @@ return {
       pyright = {},
       rust_analyzer = {},
       intelephense = {},
+      perlnavigator = {},
       -- phan = {},
       -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
       --
