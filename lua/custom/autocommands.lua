@@ -12,14 +12,3 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
-if vim.env.KITTY_SCROLLBACK_NVIM == 'true' then
-  vim.api.nvim_create_autocmd({ 'FileType' }, {
-    group = vim.api.nvim_create_augroup('KittyScrollbackNvimFileType', { clear = true }),
-    pattern = { 'kitty-scrollback' },
-    callback = function()
-      vim.print('kitty-scrollback.nvim is open!')
-      return true
-    end,
-  })
-end
-

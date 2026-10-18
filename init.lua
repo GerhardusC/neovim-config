@@ -48,7 +48,6 @@ require('lazy').setup({
   require 'custom.plugins.gitsigns', -- adds gitsigns recommend keymaps
   require 'custom.plugins.neo-tree',
   require 'custom.plugins.snacks',
-  require 'custom.plugins.kitty-scrollback',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
